@@ -16,6 +16,7 @@ dependencies = [
     "websockets>=14.0",
     "sse-starlette>=2.0",
     "eval-type-backport>=0.2.0",
+    "replicate>=1.0",
 ]
 
 [project.optional-dependencies]

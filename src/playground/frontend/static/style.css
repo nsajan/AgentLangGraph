@@ -308,6 +308,19 @@ body {
   border-radius: 6px; color: var(--text); font-size: 13px; outline: none;
 }
 .input-row input:focus { border-color: var(--accent); }
+/* Chat images and links */
+.chat-image {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 8px 0;
+  display: block;
+}
+.chat-link {
+  color: var(--accent);
+  word-break: break-all;
+}
+.chat-link:hover { color: var(--accent-hover); }
+
 .streaming-cursor {
   display: inline-block; width: 2px; height: 14px;
   background: var(--accent); animation: blink 0.8s infinite;

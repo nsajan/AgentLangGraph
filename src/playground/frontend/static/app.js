@@ -39,6 +39,8 @@ const TOOLS = [
   { value: "calculator", label: "Calculator" },
   { value: "echo", label: "Echo" },
   { value: "current_time", label: "Current Time" },
+  { value: "generate_image", label: "Generate Image (Pruna/Replicate)" },
+  { value: "list_pruna_models", label: "List Pruna Models" },
 ];
 
 // ============================================================
@@ -560,6 +562,8 @@ async function sendMessageStreaming() {
 
     if (!fullText) {
       contentEl.textContent = "(No response)";
+    } else {
+      contentEl.innerHTML = renderContent(fullText);
     }
   } catch (e) {
     // Fallback to non-streaming
@@ -571,7 +575,7 @@ async function sendMessageStreaming() {
       });
       const data = await res.json();
       fullText = data.response;
-      contentEl.textContent = fullText;
+      contentEl.innerHTML = renderContent(fullText);
     } catch (e2) {
       contentEl.textContent = `Error: ${e2.message}`;
     }
@@ -599,7 +603,8 @@ function addTraceItem(type, text) {
 function appendMessage(role, content) {
   const div = document.createElement("div");
   div.className = `message ${role}`;
-  div.innerHTML = `<div class="role">${role}</div><div class="content">${escapeHtml(content)}</div>`;
+  const rendered = role === "assistant" && content ? renderContent(content) : escapeHtml(content);
+  div.innerHTML = `<div class="role">${role}</div><div class="content">${rendered}</div>`;
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
   return div;
@@ -609,6 +614,23 @@ function escapeHtml(text) {
   const d = document.createElement("div");
   d.textContent = text;
   return d.innerHTML;
+}
+
+function renderContent(text) {
+  // Convert URLs to clickable links, and image URLs to inline images
+  let html = escapeHtml(text);
+  html = html.replace(
+    /(https?:\/\/[^\s<]+\.(?:png|jpg|jpeg|webp|gif)[^\s<]*)/gi,
+    '<a href="$1" target="_blank"><img src="$1" class="chat-image" alt="Generated image" /></a>'
+  );
+  html = html.replace(
+    /(https?:\/\/[^\s<]+(?!\.(?:png|jpg|jpeg|webp|gif)))/gi,
+    (match) => {
+      if (match.includes('<img')) return match; // already handled
+      return `<a href="${match}" target="_blank" class="chat-link">${match}</a>`;
+    }
+  );
+  return html;
 }
 
 // ============================================================

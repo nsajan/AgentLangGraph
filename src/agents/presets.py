@@ -76,7 +76,11 @@ SUPERVISOR_TEAM = AgentConfig(
     ],
 )
 
+# Import the image gen agent preset
+from src.agents.image_gen.agent import IMAGE_GEN_AGENT
+
 PRESETS: dict[str, AgentConfig] = {
+    "pruna-image-gen": IMAGE_GEN_AGENT,
     "react-chatbot": REACT_CHATBOT,
     "plan-execute-researcher": PLAN_EXECUTE_RESEARCHER,
     "reflection-writer": REFLECTION_WRITER,
