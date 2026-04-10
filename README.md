@@ -1,43 +1,54 @@
 # AgentLangGraph
 
-An **Agent Builder & Testing Playground** built with [LangGraph](https://github.com/langchain-ai/langgraph).
+A **Pattern-Based Agent Builder & Testing Playground** powered by [LangGraph](https://github.com/langchain-ai/langgraph) and Anthropic Claude.
 
-Define agents declaratively as JSON configs (nodes, edges, tools), then test them interactively through a web playground.
+Build agents by selecting an architecture pattern, configuring the nodes, and testing interactively — no code required. Export to JSON or Python when ready.
+
+## Agent Patterns
+
+| Pattern | What it does |
+|---------|-------------|
+| **ReAct** | Single agent + tools in a loop (uses `create_react_agent`) |
+| **Plan & Execute** | Planner creates steps → Executor runs each with tools → Synthesize |
+| **Reflection** | Generator drafts → Critic reviews → Loop until approved |
+| **Supervisor** | Router agent delegates to specialized worker agents |
 
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Install
 pip install -e ".[dev]"
 
-# Set your API keys
+# Set your API key
 cp .env.example .env
-# Edit .env with your keys
+# Edit .env — set ANTHROPIC_API_KEY at minimum
 
 # Start the playground
 python run.py
 ```
 
-Open [http://localhost:8000](http://localhost:8000) to use the playground.
+Open [http://localhost:8000](http://localhost:8000).
 
 ## Architecture
 
 ```
 src/
-  agent_builder/     # Core framework
-    builder.py       # Compiles AgentConfig -> LangGraph
-    schemas.py       # Pydantic models for declarative agent configs
-    state.py         # Shared graph state
-    tools.py         # Built-in tools + tool resolution
+  agent_builder/
+    builder.py         # Main builder — dispatches to pattern builders
+    schemas.py         # Pydantic models (AgentConfig, PatternType, etc.)
+    state.py           # Dynamic state factory for custom fields
+    llm.py             # Centralized LLM factory (Anthropic)
+    tools.py           # Built-in tools + resolution
+    patterns/
+      react.py         # ReAct via create_react_agent
+      plan_execute.py  # Plan & Execute with custom state
+      reflection.py    # Generator/Critic loop
+      supervisor.py    # Supervisor + worker sub-agents
   agents/
-    presets.py       # Pre-built agent configs (chatbot, calculator, multi-step)
+    presets.py         # Pre-built configs for each pattern
   playground/
-    api/             # FastAPI backend
-      main.py        # App entry point
-      routes.py      # REST API (sessions, chat, presets)
-    frontend/        # Web UI
-      templates/     # HTML
-      static/        # CSS + JS
+    api/               # FastAPI with SSE streaming + checkpointing
+    frontend/          # Web UI (pattern config, flow viz, chat)
 ```
 
 ## API
@@ -45,35 +56,14 @@ src/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/presets` | List preset agent configs |
-| POST | `/api/sessions` | Create agent session (from preset or custom config) |
-| POST | `/api/sessions/{id}/chat` | Send message to agent |
-| POST | `/api/validate` | Validate an agent config |
-
-## Creating Custom Agents
-
-```json
-{
-  "name": "my-agent",
-  "description": "A custom agent",
-  "nodes": [
-    {
-      "name": "agent",
-      "type": "llm",
-      "system_prompt": "You are a helpful assistant.",
-      "provider": "openai",
-      "model": "gpt-4o",
-      "tools": [
-        {"name": "calculator", "description": "Math tool"}
-      ]
-    }
-  ],
-  "edges": [],
-  "entry_point": "agent"
-}
-```
+| POST | `/api/sessions` | Create agent session |
+| POST | `/api/sessions/{id}/chat` | Send message |
+| POST | `/api/sessions/{id}/chat/stream` | Stream response (SSE) |
+| POST | `/api/validate` | Validate config |
+| POST | `/api/export/python` | Generate standalone Python script |
 
 ## Tests
 
 ```bash
-pytest tests/
+pytest tests/ -v
 ```

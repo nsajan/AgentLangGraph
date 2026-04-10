@@ -2,12 +2,12 @@
 name = "agent-langgraph"
 version = "0.1.0"
 description = "Agent Builder & Testing Playground using LangGraph"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "langgraph>=0.4",
     "langchain>=0.3",
-    "langchain-openai>=0.3",
     "langchain-anthropic>=0.3",
+    "langgraph-checkpoint>=2.0",
     "fastapi>=0.115",
     "uvicorn>=0.34",
     "pydantic>=2.0",
@@ -15,9 +15,13 @@ dependencies = [
     "jinja2>=3.1",
     "websockets>=14.0",
     "sse-starlette>=2.0",
+    "eval-type-backport>=0.2.0",
 ]
 
 [project.optional-dependencies]
+openai = [
+    "langchain-openai>=0.3",
+]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -25,5 +29,5 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools>=75.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"

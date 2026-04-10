@@ -6,56 +6,119 @@
   <title>AgentLangGraph Playground</title>
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-  <!-- Sidebar -->
+  <!-- LEFT PANEL: Pattern config -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <h1>AgentLangGraph</h1>
-      <p>Builder & Testing Playground</p>
+      <p>Pattern-Based Agent Builder</p>
     </div>
 
-    <div class="tabs">
-      <div class="tab active" data-tab="presets">Presets</div>
-      <div class="tab" data-tab="custom">Custom</div>
+    <!-- Pattern selector -->
+    <div class="section">
+      <div class="section-title">Pattern</div>
+      <div class="pattern-grid">
+        <button class="pattern-btn active" data-pattern="react">
+          <div class="pattern-icon react-icon">R</div>
+          <div>
+            <div class="pattern-name">ReAct</div>
+            <div class="pattern-desc">Agent + Tools loop</div>
+          </div>
+        </button>
+        <button class="pattern-btn" data-pattern="plan_execute">
+          <div class="pattern-icon plan-icon">P</div>
+          <div>
+            <div class="pattern-name">Plan & Execute</div>
+            <div class="pattern-desc">Plan steps, run each</div>
+          </div>
+        </button>
+        <button class="pattern-btn" data-pattern="reflection">
+          <div class="pattern-icon reflect-icon">Rf</div>
+          <div>
+            <div class="pattern-name">Reflection</div>
+            <div class="pattern-desc">Write, critique, revise</div>
+          </div>
+        </button>
+        <button class="pattern-btn" data-pattern="supervisor">
+          <div class="pattern-icon super-icon">S</div>
+          <div>
+            <div class="pattern-name">Supervisor</div>
+            <div class="pattern-desc">Route to workers</div>
+          </div>
+        </button>
+      </div>
     </div>
 
-    <!-- Presets tab -->
-    <div id="presets-tab" class="preset-list"></div>
+    <!-- Dynamic config form -->
+    <div class="section config-scroll" id="config-area">
+      <!-- Populated by JS based on pattern -->
+    </div>
 
-    <!-- Custom config tab -->
-    <div id="custom-tab" class="config-editor" style="display:none">
-      <textarea id="config-editor" spellcheck="false" placeholder="Paste agent config JSON here..."></textarea>
+    <!-- Presets -->
+    <div class="section">
+      <div class="section-title">Quick Start Presets</div>
+      <div id="preset-list" class="preset-list"></div>
     </div>
 
     <div class="sidebar-footer">
-      <button class="btn btn-primary" id="launch-btn" disabled>Launch Agent</button>
+      <button class="btn btn-primary" id="build-btn">Build & Test Agent</button>
+      <div class="footer-actions">
+        <button class="btn btn-outline btn-half" id="export-json-btn">Export JSON</button>
+        <button class="btn btn-outline btn-half" id="export-py-btn">Export Python</button>
+      </div>
     </div>
   </aside>
 
-  <!-- Main -->
-  <main class="main">
-    <div class="main-header">
-      <h2 id="agent-title">No agent running</h2>
+  <!-- CENTER: Flow visualization -->
+  <div class="center-panel">
+    <div class="flow-header">
+      <h3>Agent Flow</h3>
+      <span class="flow-pattern-badge" id="flow-badge">ReAct</span>
+    </div>
+    <div class="flow-canvas" id="flow-canvas">
+      <!-- SVG flow diagram rendered by JS -->
+    </div>
+    <!-- Step trace (shows during execution) -->
+    <div class="step-trace" id="step-trace" style="display:none">
+      <div class="section-title">Execution Trace</div>
+      <div id="trace-list" class="trace-list"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Chat -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <h3 id="chat-title">Test Agent</h3>
       <span class="session-badge" id="session-badge" style="display:none"></span>
     </div>
-
     <div class="chat-area" id="chat-area">
       <div class="empty-state" id="empty-state">
-        <h3>Agent Testing Playground</h3>
-        <p>Select a preset agent or paste a custom config, then hit Launch to start a session. Chat with your agent to test its behavior.</p>
+        <h3>Build & Test</h3>
+        <p>Configure your agent pattern on the left, then click "Build & Test Agent" to start chatting.</p>
       </div>
     </div>
-
     <div class="input-area">
       <div class="input-row">
         <input type="text" id="msg-input" placeholder="Send a message..." disabled />
-        <button class="btn btn-primary" id="send-btn" disabled>Send</button>
+        <button class="btn btn-primary btn-send" id="send-btn" disabled>Send</button>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Export modal -->
+  <div class="modal-overlay" id="export-modal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Export</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <textarea id="export-content" class="export-textarea" readonly></textarea>
+      <button class="btn btn-primary" id="copy-btn" style="margin-top:8px">Copy to Clipboard</button>
+    </div>
+  </div>
 
   <script src="/static/app.js"></script>
 </body>

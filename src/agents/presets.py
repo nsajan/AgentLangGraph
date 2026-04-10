@@ -1,69 +1,84 @@
-"""Pre-built agent configurations that ship with the playground."""
+"""Pre-built agent configurations for each pattern."""
 
-from src.agent_builder.schemas import AgentConfig, EdgeConfig, LLMProvider, NodeConfig, ToolConfig
+from src.agent_builder.schemas import AgentConfig, AgentNodeConfig, PatternType, ToolConfig
 
-SIMPLE_CHATBOT = AgentConfig(
-    name="simple-chatbot",
-    description="A minimal chatbot — single LLM node, no tools.",
-    nodes=[
-        NodeConfig(
-            name="agent",
-            type="llm",
-            system_prompt="You are a friendly, helpful assistant.",
-            provider=LLMProvider.OPENAI,
-            model="gpt-4o",
-        ),
-    ],
-    edges=[],
-    entry_point="agent",
-    finish_point="agent",
+REACT_CHATBOT = AgentConfig(
+    name="react-chatbot",
+    description="A conversational agent with calculator and time tools.",
+    pattern=PatternType.REACT,
+    agent=AgentNodeConfig(
+        name="agent",
+        system_prompt="You are a helpful assistant. Use tools when appropriate.",
+        model="claude-sonnet-4-20250514",
+        tools=[
+            ToolConfig(name="calculator", description="Evaluate math expressions"),
+            ToolConfig(name="current_time", description="Get current date/time"),
+        ],
+    ),
 )
 
-CALCULATOR_AGENT = AgentConfig(
-    name="calculator-agent",
-    description="An assistant that can do math using a calculator tool.",
-    nodes=[
-        NodeConfig(
-            name="agent",
-            type="llm",
-            system_prompt="You are a math tutor. Use the calculator tool when you need to compute something.",
-            provider=LLMProvider.OPENAI,
-            model="gpt-4o",
-            tools=[ToolConfig(name="calculator", description="Evaluate math expressions")],
-        ),
-    ],
-    edges=[],
-    entry_point="agent",
+PLAN_EXECUTE_RESEARCHER = AgentConfig(
+    name="plan-execute-researcher",
+    description="Plans a research approach, then executes each step systematically.",
+    pattern=PatternType.PLAN_EXECUTE,
+    planner=AgentNodeConfig(
+        name="planner",
+        system_prompt="You are a research planner. Break complex questions into clear, sequential research steps.",
+        model="claude-sonnet-4-20250514",
+    ),
+    executor=AgentNodeConfig(
+        name="executor",
+        system_prompt="You are a research executor. Complete the assigned step thoroughly and concisely.",
+        model="claude-sonnet-4-20250514",
+        tools=[
+            ToolConfig(name="calculator", description="Evaluate math expressions"),
+        ],
+    ),
 )
 
-MULTI_STEP_AGENT = AgentConfig(
-    name="multi-step-agent",
-    description="A two-node pipeline: a planner feeds into an executor.",
-    nodes=[
-        NodeConfig(
-            name="planner",
-            type="llm",
-            system_prompt="You are a planning assistant. Break the user's request into clear steps. Output only the plan.",
-            provider=LLMProvider.OPENAI,
-            model="gpt-4o",
+REFLECTION_WRITER = AgentConfig(
+    name="reflection-writer",
+    description="Writes content, then self-critiques and revises up to 3 times.",
+    pattern=PatternType.REFLECTION,
+    max_iterations=3,
+    generator=AgentNodeConfig(
+        name="writer",
+        system_prompt="You are an expert writer. Produce clear, well-structured content based on the user's request.",
+        model="claude-sonnet-4-20250514",
+    ),
+    critic=AgentNodeConfig(
+        name="critic",
+        system_prompt="You are a demanding editor. Review the draft for clarity, accuracy, structure, and completeness. Be specific in your feedback.",
+        model="claude-sonnet-4-20250514",
+    ),
+)
+
+SUPERVISOR_TEAM = AgentConfig(
+    name="supervisor-team",
+    description="A supervisor delegates to a researcher and a writer to produce well-researched content.",
+    pattern=PatternType.SUPERVISOR,
+    supervisor=AgentNodeConfig(
+        name="supervisor",
+        system_prompt="You manage a team. Route tasks to the right worker based on what's needed.",
+        model="claude-sonnet-4-20250514",
+    ),
+    workers=[
+        AgentNodeConfig(
+            name="researcher",
+            system_prompt="You are a thorough researcher. Provide detailed, factual analysis on the given topic.",
+            model="claude-sonnet-4-20250514",
         ),
-        NodeConfig(
-            name="executor",
-            type="llm",
-            system_prompt="You receive a plan from the planner. Execute each step and provide a final answer.",
-            provider=LLMProvider.OPENAI,
-            model="gpt-4o",
+        AgentNodeConfig(
+            name="writer",
+            system_prompt="You are a skilled writer. Take research findings and produce polished, engaging content.",
+            model="claude-sonnet-4-20250514",
         ),
     ],
-    edges=[
-        EdgeConfig(source="planner", target="executor"),
-    ],
-    entry_point="planner",
-    finish_point="executor",
 )
 
 PRESETS: dict[str, AgentConfig] = {
-    "simple-chatbot": SIMPLE_CHATBOT,
-    "calculator-agent": CALCULATOR_AGENT,
-    "multi-step-agent": MULTI_STEP_AGENT,
+    "react-chatbot": REACT_CHATBOT,
+    "plan-execute-researcher": PLAN_EXECUTE_RESEARCHER,
+    "reflection-writer": REFLECTION_WRITER,
+    "supervisor-team": SUPERVISOR_TEAM,
 }

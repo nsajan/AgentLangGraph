@@ -1,66 +1,81 @@
 """Tests for agent builder schemas and config validation."""
 
-from src.agent_builder.schemas import AgentConfig, EdgeConfig, NodeConfig, ToolConfig
+from src.agent_builder.schemas import AgentConfig, AgentNodeConfig, PatternType, ToolConfig
 
 
-def test_minimal_config():
+def test_react_config():
     config = AgentConfig(
         name="test",
-        nodes=[NodeConfig(name="agent", type="llm")],
-        edges=[],
-        entry_point="agent",
+        pattern=PatternType.REACT,
+        agent=AgentNodeConfig(name="agent"),
     )
-    assert config.name == "test"
-    assert len(config.nodes) == 1
+    assert config.pattern == PatternType.REACT
+    assert config.agent.name == "agent"
 
 
-def test_config_with_tools():
+def test_plan_execute_config():
     config = AgentConfig(
-        name="tool-test",
-        nodes=[
-            NodeConfig(
-                name="agent",
-                type="llm",
-                tools=[ToolConfig(name="calculator", description="math")],
-            )
-        ],
-        edges=[],
-        entry_point="agent",
+        name="test",
+        pattern=PatternType.PLAN_EXECUTE,
+        planner=AgentNodeConfig(name="planner"),
+        executor=AgentNodeConfig(name="executor", tools=[ToolConfig(name="calculator")]),
     )
-    assert len(config.nodes[0].tools) == 1
-    assert config.nodes[0].tools[0].name == "calculator"
+    assert len(config.executor.tools) == 1
 
 
-def test_multi_node_config():
+def test_reflection_config():
     config = AgentConfig(
-        name="multi",
-        nodes=[
-            NodeConfig(name="a", type="llm"),
-            NodeConfig(name="b", type="llm"),
-        ],
-        edges=[EdgeConfig(source="a", target="b")],
-        entry_point="a",
-        finish_point="b",
+        name="test",
+        pattern=PatternType.REFLECTION,
+        max_iterations=5,
+        generator=AgentNodeConfig(name="gen"),
+        critic=AgentNodeConfig(name="critic"),
     )
-    assert len(config.edges) == 1
-    assert config.edges[0].source == "a"
+    assert config.max_iterations == 5
+
+
+def test_supervisor_config():
+    config = AgentConfig(
+        name="test",
+        pattern=PatternType.SUPERVISOR,
+        supervisor=AgentNodeConfig(name="sup"),
+        workers=[
+            AgentNodeConfig(name="w1"),
+            AgentNodeConfig(name="w2"),
+        ],
+    )
+    assert len(config.workers) == 2
 
 
 def test_config_serialization():
     config = AgentConfig(
         name="test",
-        nodes=[NodeConfig(name="agent", type="llm")],
-        edges=[],
-        entry_point="agent",
+        pattern=PatternType.REACT,
+        agent=AgentNodeConfig(name="agent", tools=[ToolConfig(name="echo")]),
     )
     data = config.model_dump()
     restored = AgentConfig(**data)
-    assert restored.name == config.name
+    assert restored.agent.tools[0].name == "echo"
 
 
-def test_presets_load():
+def test_builder_validation():
+    from src.agent_builder.builder import AgentBuilder
+
+    # Missing agent for react
+    config = AgentConfig(name="bad", pattern=PatternType.REACT)
+    errors = AgentBuilder(config).validate()
+    assert len(errors) > 0
+
+    # Valid react
+    config = AgentConfig(name="good", pattern=PatternType.REACT, agent=AgentNodeConfig(name="a"))
+    errors = AgentBuilder(config).validate()
+    assert len(errors) == 0
+
+
+def test_presets_valid():
+    from src.agent_builder.builder import AgentBuilder
     from src.agents.presets import PRESETS
-    assert len(PRESETS) >= 3
+
     for name, cfg in PRESETS.items():
-        assert cfg.name == name
-        assert cfg.entry_point
+        errors = AgentBuilder(cfg).validate()
+        assert errors == [], f"Preset '{name}' has validation errors: {errors}"
