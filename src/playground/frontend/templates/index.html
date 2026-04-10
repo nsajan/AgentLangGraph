@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentLangGraph Playground</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>AgentLangGraph</h1>
+      <p>Builder & Testing Playground</p>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="presets">Presets</div>
+      <div class="tab" data-tab="custom">Custom</div>
+    </div>
+
+    <!-- Presets tab -->
+    <div id="presets-tab" class="preset-list"></div>
+
+    <!-- Custom config tab -->
+    <div id="custom-tab" class="config-editor" style="display:none">
+      <textarea id="config-editor" spellcheck="false" placeholder="Paste agent config JSON here..."></textarea>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn btn-primary" id="launch-btn" disabled>Launch Agent</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="main-header">
+      <h2 id="agent-title">No agent running</h2>
+      <span class="session-badge" id="session-badge" style="display:none"></span>
+    </div>
+
+    <div class="chat-area" id="chat-area">
+      <div class="empty-state" id="empty-state">
+        <h3>Agent Testing Playground</h3>
+        <p>Select a preset agent or paste a custom config, then hit Launch to start a session. Chat with your agent to test its behavior.</p>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <input type="text" id="msg-input" placeholder="Send a message..." disabled />
+        <button class="btn btn-primary" id="send-btn" disabled>Send</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
